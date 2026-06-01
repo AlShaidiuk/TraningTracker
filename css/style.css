@@ -325,6 +325,19 @@ main {
     cursor: default;
 }
 
+.calendar-day.planned-workout:not(.today) {
+    background: #a5d6a7; /* светло-зеленый */
+    color: #1b5e20;
+    font-weight: 500;
+}
+
+/* День, который одновременно сегодня и запланирован */
+.calendar-day.today.planned-workout {
+    background: #4caf50; /* насыщенный зеленый */
+    color: white;
+    font-weight: bold;
+}
+
 /* Адаптация календаря под мобильные */
 @media (max-width: 600px) {
     .calendar-day {
