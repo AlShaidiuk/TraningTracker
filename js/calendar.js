@@ -1,30 +1,20 @@
-// Модуль управления календарем тренировок
 class TrainingCalendar {
     constructor() {
         this.nextTrainingDate = null;
-        this.exercises = [];
         this.init();
     }
 
     init() {
         this.loadNextTraining();
-        // Здесь будет загрузка данных из Firebase
+        this.setupClickHandler();
     }
 
     async loadNextTraining() {
         try {
-            // В будущем здесь будет загрузка из Firebase
-            // const snapshot = await db.collection('trainings')
-            //     .orderBy('date', 'asc')
-            //     .where('date', '>=', new Date())
-            //     .limit(1)
-            //     .get();
-            
-            // Временные данные для демонстрации
+            // Временные данные
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             this.nextTrainingDate = tomorrow;
-            
             this.updateDisplay();
         } catch (error) {
             console.error('Error loading training:', error);
@@ -44,20 +34,12 @@ class TrainingCalendar {
         }
     }
 
-    async saveTraining(data) {
-        try {
-            // Здесь будет сохранение в Firebase
-            // await db.collection('completed_trainings').add({
-            //     date: new Date(),
-            //     exercises: data.exercises,
-            //     completed: data.completed
-            // });
-            
-            console.log('Training saved:', data);
-            return true;
-        } catch (error) {
-            console.error('Error saving training:', error);
-            return false;
+    setupClickHandler() {
+        const dateDisplay = document.getElementById('nextTrainingDate');
+        if (dateDisplay) {
+            dateDisplay.addEventListener('click', () => {
+                window.location.href = 'calendar.html';
+            });
         }
     }
 
