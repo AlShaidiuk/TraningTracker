@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Tracker - Дашборд</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (пока не используется, но готово) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
@@ -15,10 +15,9 @@
             <h1>Workout Tracker</h1>
             <nav>
                 <ul>
-                    <li><a href="#" class="active">Дашборд</a></li>
-                    <li><a href="#">Упражнения</a></li>
-                    <li><a href="#">Прогресс</a></li>
-                    <li><a href="#">Настройки</a></li>
+                    <li><a href="index.html" class="active">Дашборд</a></li>
+                    <li><a href="calendar.html">Календарь</a></li>
+                    <!-- В будущем: Упражнения, Прогресс, Настройки -->
                 </ul>
             </nav>
         </header>
@@ -27,25 +26,16 @@
             <section class="dashboard">
                 <h2>Дашборд</h2>
                 
-                <!-- Календарь тренировок -->
+                <!-- Календарь тренировок (только посещаемость) -->
                 <div class="training-calendar">
-                    <h3>Календарь тренировок</h3>
+                    <h3>Ближайшая тренировка</h3>
                     <div class="next-training">
-                        <label>Дата следующей тренировки:</label>
-                        <div id="nextTrainingDate" class="date-display">
-                            <span id="trainingDate">Выберите дату</span>
+                        <div class="date-display" id="nextTrainingDate">
+                            <span id="trainingDate">Загрузка...</span>
                         </div>
                         <button id="completeWorkoutBtn" class="btn btn-primary">
                             Завершить тренировку
                         </button>
-                    </div>
-                </div>
-
-                <!-- Контейнер для статистики (будет заполняться позже) -->
-                <div class="progress-overview">
-                    <h3>Общий прогресс</h3>
-                    <div id="progressContainer">
-                        <p>Здесь будет отображаться прогресс тренировок</p>
                     </div>
                 </div>
             </section>
@@ -55,7 +45,7 @@
     <!-- Поп-ап окно -->
     <div id="popupOverlay" class="popup-overlay">
         <div class="popup-content">
-            <h3 id="popupTitle">Завершить тренировку?</h3>
+            <h3>Завершить тренировку?</h3>
             <div class="popup-buttons">
                 <button id="popupYes" class="btn btn-success">ДА</button>
                 <button id="popupNo" class="btn btn-danger">НЕТ</button>
@@ -74,8 +64,15 @@
     </div>
 
     <script src="firebase/config.js"></script>
-    <script src="js/app.js"></script>
     <script src="js/calendar.js"></script>
     <script src="js/popup.js"></script>
+    <script>
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // Инициализация календаря на дашборде
+            const trainingCal = new TrainingCalendar();
+            const popup = new PopupManager(trainingCal);
+        });
+    </script>
 </body>
 </html>
