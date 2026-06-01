@@ -72,6 +72,14 @@
             // Инициализация календаря на дашборде
             const trainingCal = new TrainingCalendar();
             const popup = new PopupManager(trainingCal);
+
+            // Привязываем кнопку открытия попапа
+            const completeBtn = document.getElementById('completeWorkoutBtn');
+            if (completeBtn) {
+                completeBtn.addEventListener('click', () => {
+                    popup.showPopup();
+                });
+            }
         });
     </script>
 </body>
