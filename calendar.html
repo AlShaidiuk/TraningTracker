@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь тренировок</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Workout Tracker</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Дашборд</a></li>
+                    <li><a href="calendar.html" class="active">Календарь</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <section class="calendar-section">
+                <h2>Календарь посещений</h2>
+                
+                <div class="calendar-container">
+                    <div class="month-header">
+                        <h3 id="currentMonth">Месяц</h3>
+                        <button id="settingsBtn" class="settings-btn" title="Настройки">
+                            ⚙️
+                        </button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Календарь будет сгенерирован JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/calendar-page.js"></script>
+</body>
+</html>
