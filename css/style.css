@@ -292,6 +292,7 @@ main {
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     text-align: center;
+    min-width: 500px;
 }
 
 .calendar-day-header {
