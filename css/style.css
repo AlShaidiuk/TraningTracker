@@ -290,17 +290,16 @@ main {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+    gap: 3px;
     text-align: center;
-    min-width: 500px;
+    font-size: 14px;   /* базовый размер для мобильных */
 }
 
-.calendar-day-header {
-    font-weight: bold;
-    background: #667eea;
-    color: white;
-    padding: 10px 0;
-    border-radius: 5px;
+.calendar-day-header,
+.calendar-day {
+    padding: 8px 2px;
+    border-radius: 4px;
+    word-break: break-word;
 }
 
 .calendar-day {
@@ -340,10 +339,26 @@ main {
 }
 
 /* Адаптация календаря под мобильные */
-@media (max-width: 600px) {
+@media (max-width: 400px) {
+    .calendar-grid {
+        gap: 1px;
+        font-size: 12px;
+    }
+    .calendar-day-header,
     .calendar-day {
-        padding: 10px 0;
-        font-size: 14px;
+        padding: 6px 1px;
+    }
+}
+
+/* На десктопах возвращаем комфортные размеры */
+@media (min-width: 768px) {
+    .calendar-grid {
+        gap: 5px;
+        font-size: 16px;
+    }
+    .calendar-day-header,
+    .calendar-day {
+        padding: 10px 5px;
     }
 }
 
