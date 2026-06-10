@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Tracker - Дашборд</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Firebase SDK (пока не используется, но готово) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script src="firebase/config.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/popup.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const trainingCal = new TrainingCalendar();
+        const popup = new PopupManager(trainingCal);
+        const completeBtn = document.getElementById('completeWorkoutBtn');
+        if (completeBtn) {
+            completeBtn.addEventListener('click', () => {
+                popup.showPopup();
+            });
+        }
+    });
+</script>
 </head>
 <body>
     <div class="container">
