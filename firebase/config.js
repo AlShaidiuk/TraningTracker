@@ -2,6 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyB_xheiQv0WfSmghmELLS93-3k5Qaq4HEk",
   authDomain: "traningtracker.firebaseapp.com",
+  databaseURL: "https://traningtracker-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "traningtracker",
   storageBucket: "traningtracker.firebasestorage.app",
   messagingSenderId: "959611040594",
@@ -11,5 +12,5 @@ const firebaseConfig = {
 
 // Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+//const db = firebase.firestore();
 
