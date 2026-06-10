@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблоны тренировок</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Workout Tracker</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Дашборд</a></li>
+                    <li><a href="calendar.html">Календарь</a></li>
+                    <li><a href="templates.html" class="active">Шаблоны</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <section class="templates-section">
+                <h2>Мои шаблоны</h2>
+                <div id="templatesList" class="templates-manager">
+                    <!-- Загружается через JS -->
+                </div>
+                <p id="noTemplatesMessage" style="display:none;">У вас пока нет шаблонов.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно для редактирования названия -->
+    <div id="editTemplateOverlay" class="popup-overlay">
+        <div class="popup-content">
+            <h3>Редактировать шаблон</h3>
+            <input type="text" id="editTemplateNameInput" class="input-field" placeholder="Новое название">
+            <div class="popup-buttons">
+                <button id="saveEditTemplateBtn" class="btn btn-success">Сохранить</button>
+                <button id="cancelEditTemplateBtn" class="btn btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="firebase/config.js"></script>
+    <script src="js/templates.js"></script>
+</body>
+</html>
