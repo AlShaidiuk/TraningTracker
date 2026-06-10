@@ -8,6 +8,9 @@ class CalendarPage {
         this.selectedDate = null;
         this.selectedElement = null;
 
+        // Кнопка "Смотреть тренировку"
+        this.viewWorkoutBtn = document.getElementById('viewWorkoutBtn');
+
         this.init();
     }
 
@@ -15,6 +18,7 @@ class CalendarPage {
         await this.loadPlannedDatesFromDB();
         this.renderCalendar();
         this.setupSettingsButton();
+        this.setupViewWorkoutButton();
     }
 
     // Загрузка дат из Realtime Database
@@ -23,10 +27,8 @@ class CalendarPage {
             const snapshot = await firebase.database().ref('plannedWorkouts').once('value');
             const data = snapshot.val();
             if (data) {
-                // Ключи объекта – это даты в формате YYYY-MM-DD
                 this.plannedDates = Object.keys(data);
             } else {
-                // Если данных нет, создаём демо-тренировки
                 this.plannedDates = this.getMockPlannedDates();
                 await this.saveAllDatesToDB();
             }
@@ -36,13 +38,10 @@ class CalendarPage {
         }
     }
 
-    // Сохранение всех дат разом (первый запуск)
     async saveAllDatesToDB() {
         try {
-            const updates = {};
-            // Удаляем старые (на всякий случай)
             await firebase.database().ref('plannedWorkouts').remove();
-            // Записываем новые
+            const updates = {};
             this.plannedDates.forEach(date => {
                 updates[date] = true;
             });
@@ -52,7 +51,6 @@ class CalendarPage {
         }
     }
 
-    // Добавить одну дату
     async addPlannedDate(dateStr) {
         try {
             await firebase.database().ref(`plannedWorkouts/${dateStr}`).set(true);
@@ -61,7 +59,6 @@ class CalendarPage {
         }
     }
 
-    // Удалить одну дату
     async removePlannedDate(dateStr) {
         try {
             await firebase.database().ref(`plannedWorkouts/${dateStr}`).remove();
@@ -70,7 +67,6 @@ class CalendarPage {
         }
     }
 
-    // Демо-даты (пн, ср, пт)
     getMockPlannedDates() {
         const y = this.today.getFullYear();
         const m = this.today.getMonth();
@@ -156,6 +152,9 @@ class CalendarPage {
 
             grid.appendChild(dayCell);
         }
+
+        // Обновляем состояние кнопки после перерисовки
+        this.updateViewWorkoutButton();
     }
 
     selectDay(date, element) {
@@ -165,10 +164,44 @@ class CalendarPage {
         this.selectedDate = this.formatDate(date);
         this.selectedElement = element;
         element.classList.add('selected');
+
+        // Обновляем кнопку "Смотреть тренировку"
+        this.updateViewWorkoutButton();
+    }
+
+    // Включает/выключает кнопку в зависимости от выбранной даты
+    updateViewWorkoutButton() {
+        if (!this.viewWorkoutBtn) return;
+
+        if (this.selectedDate && this.plannedDates.includes(this.selectedDate)) {
+            this.viewWorkoutBtn.disabled = false;
+        } else {
+            this.viewWorkoutBtn.disabled = true;
+        }
+    }
+
+    // Обработчик клика по кнопке "Смотреть тренировку"
+    setupViewWorkoutButton() {
+        if (!this.viewWorkoutBtn) return;
+
+        this.viewWorkoutBtn.addEventListener('click', () => {
+            if (this.selectedDate) {
+                window.location.href = `workout.html?date=${this.selectedDate}`;
+            }
+        });
     }
 
     async refreshDataAndRender() {
         await this.loadPlannedDatesFromDB();
+        // Оставляем выбранную дату только если она всё ещё есть в plannedDates
+        if (this.selectedDate && !this.plannedDates.includes(this.selectedDate)) {
+            // Если после обновления тренировка исчезла (например, удалили), снимаем выделение
+            if (this.selectedElement) {
+                this.selectedElement.classList.remove('selected');
+            }
+            this.selectedDate = null;
+            this.selectedElement = null;
+        }
         this.renderCalendar();
     }
 
