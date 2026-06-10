@@ -4,40 +4,80 @@ class CalendarPage {
         this.currentMonth = this.today.getMonth();
         this.currentYear = this.today.getFullYear();
 
-        // Загружаем запланированные даты из localStorage
-        this.plannedDates = this.loadPlannedDates();
-
+        // Массив запланированных дат (будет загружен асинхронно)
+        this.plannedDates = [];
         this.selectedDate = null;
         this.selectedElement = null;
 
+        // Инициализация после загрузки данных
         this.init();
     }
 
-    init() {
+    async init() {
+        // Показываем индикатор загрузки (опционально)
+        await this.loadPlannedDatesFromFirestore();
         this.renderCalendar();
         this.setupSettingsButton();
     }
 
-    // Загрузка из localStorage или генерация демо-данных для первого запуска
-    loadPlannedDates() {
-        const stored = localStorage.getItem('plannedWorkouts');
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch (e) {
-                // Если данные повреждены, начинаем с демо
+    // Загрузка дат из Firestore
+    async loadPlannedDatesFromFirestore() {
+        try {
+            const snapshot = await db.collection('plannedWorkouts').get();
+            if (snapshot.empty) {
+                // Если коллекция пуста, создаём демо-даты и сохраняем
+                this.plannedDates = this.getMockPlannedDates();
+                await this.savePlannedDatesToFirestore();
+            } else {
+                this.plannedDates = snapshot.docs.map(doc => doc.id);
             }
+        } catch (error) {
+            console.error('Ошибка загрузки дат из Firestore:', error);
+            // Резервный вариант: загружаем демо, но не сохраняем в базу
+            this.plannedDates = this.getMockPlannedDates();
         }
-        // Демо-тренировки на первый раз: пн, ср, пт текущего месяца
-        return this.getMockPlannedDates();
     }
 
-    // Сохранение в localStorage
-    savePlannedDates() {
-        localStorage.setItem('plannedWorkouts', JSON.stringify(this.plannedDates));
+    // Сохранение ВСЕХ текущих дат в Firestore (используется при первой инициализации)
+    async savePlannedDatesToFirestore() {
+        try {
+            const batch = db.batch();
+            // Очищаем существующие (удаляем все, потом добавим новые)
+            const snapshot = await db.collection('plannedWorkouts').get();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            // Добавляем все даты из массива
+            this.plannedDates.forEach(date => {
+                const docRef = db.collection('plannedWorkouts').doc(date);
+                batch.set(docRef, { createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error('Ошибка сохранения дат в Firestore:', error);
+        }
     }
 
-    // Демо-даты (пн, ср, пт)
+    // Добавить одну дату в Firestore
+    async addPlannedDate(dateStr) {
+        try {
+            await db.collection('plannedWorkouts').doc(dateStr).set({
+                date: dateStr,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch (error) {
+            console.error('Ошибка добавления даты:', error);
+        }
+    }
+
+    // Удалить одну дату из Firestore
+    async removePlannedDate(dateStr) {
+        try {
+            await db.collection('plannedWorkouts').doc(dateStr).delete();
+        } catch (error) {
+            console.error('Ошибка удаления даты:', error);
+        }
+    }
+
+    // Демо-даты (пн, ср, пт текущего месяца)
     getMockPlannedDates() {
         const y = this.today.getFullYear();
         const m = this.today.getMonth();
@@ -134,28 +174,32 @@ class CalendarPage {
         element.classList.add('selected');
     }
 
+    async refreshDataAndRender() {
+        // Перезагружаем список дат из Firestore, чтобы синхронизировать
+        await this.loadPlannedDatesFromFirestore();
+        this.renderCalendar();
+    }
+
     setupSettingsButton() {
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsOverlay = document.getElementById('settingsOverlay');
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
 
-        document.getElementById('addWorkoutBtn').addEventListener('click', () => {
+        document.getElementById('addWorkoutBtn').addEventListener('click', async () => {
             if (this.selectedDate) {
                 if (!this.plannedDates.includes(this.selectedDate)) {
-                    this.plannedDates.push(this.selectedDate);
+                    await this.addPlannedDate(this.selectedDate);
                 }
-                this.savePlannedDates();  // <-- сохраняем
                 this.closeSettingsPopup();
-                this.renderCalendar();
+                await this.refreshDataAndRender();
             }
         });
 
-        document.getElementById('removeWorkoutBtn').addEventListener('click', () => {
+        document.getElementById('removeWorkoutBtn').addEventListener('click', async () => {
             if (this.selectedDate) {
-                this.plannedDates = this.plannedDates.filter(d => d !== this.selectedDate);
-                this.savePlannedDates();  // <-- сохраняем
+                await this.removePlannedDate(this.selectedDate);
                 this.closeSettingsPopup();
-                this.renderCalendar();
+                await this.refreshDataAndRender();
             }
         });
 
