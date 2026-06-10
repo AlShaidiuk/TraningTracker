@@ -287,12 +287,12 @@ main {
     background: #e0e0e0;
 }
 
-.calendar-grid {
-    display: grid;
+calendar-grid {
+    display: grid !important;  /* насильно, чтобы никакой медиа-запрос не перебил */
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
     text-align: center;
-    font-size: 14px;   /* базовый размер для мобильных */
+    font-size: 14px;
 }
 
 .calendar-day-header,
@@ -300,6 +300,13 @@ main {
     padding: 8px 2px;
     border-radius: 4px;
     word-break: break-word;
+}
+
+.calendar-day-header {
+    font-weight: bold;
+    background: #667eea;
+    color: white;
+    padding: 10px 2px;
 }
 
 .calendar-day {
