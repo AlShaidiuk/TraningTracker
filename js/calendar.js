@@ -1,6 +1,7 @@
 class TrainingCalendar {
     constructor() {
-        this.nextTrainingDate = null;   // объект Date ближайшей тренировки
+        this.nextTrainingDate = null;       // объект Date ближайшей тренировки
+        this.templateName = null;           // название шаблона (если есть)
         this.displayElement = document.getElementById('trainingDate');
         this.init();
     }
@@ -16,35 +17,47 @@ class TrainingCalendar {
             const snapshot = await firebase.database().ref('plannedWorkouts').once('value');
             const data = snapshot.val();
 
-            // Если данных нет
             if (!data) {
                 this.nextTrainingDate = null;
+                this.templateName = null;
                 this.updateDisplay();
                 return;
             }
 
-            // Получаем все даты (ключи) и преобразуем в объекты Date
             const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0); // начало сегодняшнего дня
+            todayStart.setHours(0, 0, 0, 0);
 
-            const plannedDates = Object.keys(data)
-                .map(dateStr => {
-                    const [y, m, d] = dateStr.split('-').map(Number);
-                    return new Date(y, m - 1, d);
-                })
-                .filter(date => date >= todayStart) // только сегодня и будущие
-                .sort((a, b) => a - b); // по возрастанию
+            // Получаем все ключи (даты) и фильтруем сегодня + будущие
+            const plannedDates = Object.keys(data).filter(dateStr => {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const date = new Date(y, m - 1, d);
+                return date >= todayStart;
+            }).sort(); // строковая сортировка "YYYY-MM-DD" совпадает с хронологической
 
             if (plannedDates.length === 0) {
-                this.nextTrainingDate = null; // нет будущих тренировок
+                this.nextTrainingDate = null;
+                this.templateName = null;
             } else {
-                this.nextTrainingDate = plannedDates[0]; // ближайшая
+                const nearestDateStr = plannedDates[0];
+                const [y, m, d] = nearestDateStr.split('-').map(Number);
+                this.nextTrainingDate = new Date(y, m - 1, d);
+
+                const workoutData = data[nearestDateStr];
+                const templateId = workoutData && workoutData.templateId;
+                if (templateId && templateId !== 'default') {
+                    // Загружаем название шаблона
+                    const templateSnap = await firebase.database().ref(`templates/${templateId}/name`).once('value');
+                    this.templateName = templateSnap.val() || null;
+                } else {
+                    this.templateName = null;
+                }
             }
 
             this.updateDisplay();
         } catch (error) {
             console.error('Ошибка загрузки тренировок для дашборда:', error);
             this.nextTrainingDate = null;
+            this.templateName = null;
             this.updateDisplay();
         }
     }
@@ -60,21 +73,23 @@ class TrainingCalendar {
 
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
-
         const trainDateStart = new Date(this.nextTrainingDate);
         trainDateStart.setHours(0, 0, 0, 0);
 
+        let text = '';
         if (trainDateStart.getTime() === todayStart.getTime()) {
-            this.displayElement.textContent = 'Сегодня!';
+            text = 'Сегодня!';
         } else {
-            const options = {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            };
-            this.displayElement.textContent = this.nextTrainingDate.toLocaleDateString('ru-RU', options);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            text = this.nextTrainingDate.toLocaleDateString('ru-RU', options);
         }
+
+        // Добавляем название шаблона, если он есть
+        if (this.templateName) {
+            text += ` — ${this.templateName}`;
+        }
+
+        this.displayElement.textContent = text;
     }
 
     setupClickHandler() {
@@ -83,7 +98,6 @@ class TrainingCalendar {
 
         dateDisplay.addEventListener('click', () => {
             if (!this.nextTrainingDate) {
-                // Нет тренировок — всё равно идём в календарь
                 window.location.href = 'calendar.html';
                 return;
             }
@@ -93,18 +107,15 @@ class TrainingCalendar {
             const trainDateStart = new Date(this.nextTrainingDate);
             trainDateStart.setHours(0, 0, 0, 0);
 
-            // Если ближайшая тренировка сегодня — переходим сразу на страницу тренировки
             if (trainDateStart.getTime() === todayStart.getTime()) {
                 const dateStr = this.formatDate(this.nextTrainingDate);
                 window.location.href = `workout.html?date=${dateStr}`;
             } else {
-                // Иначе на страницу календаря
                 window.location.href = 'calendar.html';
             }
         });
     }
 
-    // Вспомогательный метод для форматирования даты в YYYY-MM-DD
     formatDate(date) {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -112,7 +123,6 @@ class TrainingCalendar {
         return `${y}-${m}-${d}`;
     }
 
-    // Метод для совместимости с PopupManager (возвращает ближайшую дату или null)
     getNextTrainingDate() {
         return this.nextTrainingDate;
     }
