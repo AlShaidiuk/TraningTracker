@@ -364,6 +364,44 @@ main {
     outline: none;
 }
 
+/* Страница шаблонов */
+.template-manage-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.template-manage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+}
+
+.template-manage-item:hover {
+    background: #eef0ff;
+}
+
+.template-name {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+}
+
+.template-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
