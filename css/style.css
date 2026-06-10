@@ -311,6 +311,14 @@ main {
     font-weight: bold;
 }
 
+/* Неактивная кнопка */
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
