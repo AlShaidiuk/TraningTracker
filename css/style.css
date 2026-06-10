@@ -57,6 +57,7 @@ main {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Дашборд */
 .dashboard h2 {
     color: #333;
     margin-bottom: 20px;
@@ -64,7 +65,6 @@ main {
     padding-bottom: 10px;
 }
 
-/* Календарь тренировок */
 .training-calendar {
     background: #f8f9fa;
     padding: 20px;
@@ -88,6 +88,13 @@ main {
     font-size: 18px;
     font-weight: 500;
     color: #667eea;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.date-display:hover {
+    background-color: #eef0ff;
+    border-color: #4a5cd4;
 }
 
 /* Кнопки */
@@ -139,7 +146,7 @@ main {
     background: #5a6268;
 }
 
-/* Поп-ап оверлей */
+/* Попап и ворнинг */
 .popup-overlay,
 .warning-overlay {
     display: none;
@@ -207,53 +214,7 @@ main {
     font-size: 16px;
 }
 
-/* Прогресс обзор */
-.progress-overview {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-}
-
-.progress-overview h3 {
-    margin-bottom: 15px;
-    color: #333;
-}
-
-/* Адаптивный дизайн */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    nav ul {
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .popup-content,
-    .warning-content {
-        margin: 20px;
-        padding: 20px;
-    }
-    
-    .btn {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-/* ... (все предыдущие стили остаются) */
-
-/* Стиль для кликабельной даты */
-.date-display {
-    cursor: pointer;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.date-display:hover {
-    background-color: #eef0ff;
-    border-color: #4a5cd4;
-}
-
-/* Календарь (для calendar.html) */
+/* Календарь (страница calendar.html) */
 .calendar-container {
     background: #f8f9fa;
     padding: 20px;
@@ -287,7 +248,8 @@ main {
     background: #e0e0e0;
 }
 
-calendar-grid {
+/* Сетка календаря – всегда 7 колонок */
+.calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
@@ -295,6 +257,7 @@ calendar-grid {
     font-size: 14px;
 }
 
+/* Ячейки дней */
 .calendar-day-header,
 .calendar-day {
     padding: 8px 2px;
@@ -311,9 +274,7 @@ calendar-grid {
 
 .calendar-day {
     background: white;
-    padding: 15px 0;
-    border-radius: 5px;
-    cursor: default;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
@@ -333,30 +294,24 @@ calendar-grid {
 }
 
 .calendar-day.planned-workout:not(.today) {
-    background: #a5d6a7; /* светло-зеленый */
+    background: #a5d6a7;
     color: #1b5e20;
     font-weight: 500;
 }
 
-/* День, который одновременно сегодня и запланирован */
 .calendar-day.today.planned-workout {
-    background: #4caf50; /* насыщенный зеленый */
+    background: #4caf50;
     color: white;
     font-weight: bold;
 }
 
-/* Адаптация календаря под мобильные */
-@media (max-width: 400px) {
-    .calendar-grid {
-        gap: 1px;
-        font-size: 12px;
-    }
-    .calendar-day-header,
-    .calendar-day {
-        padding: 6px 1px;
-    }
+.calendar-day.selected {
+    outline: 3px solid #ff9800;
+    background-color: #fff3e0;
+    font-weight: bold;
 }
 
+/* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
         gap: 1px;
@@ -368,7 +323,6 @@ calendar-grid {
     }
 }
 
-/* На десктопах возвращаем комфортные размеры */
 @media (min-width: 769px) {
     .calendar-grid {
         gap: 5px;
@@ -380,14 +334,25 @@ calendar-grid {
     }
 }
 
-/* Выделенный день в календаре */
-.calendar-day.selected {
-    outline: 3px solid #ff9800;
-    background-color: #fff3e0;
-    font-weight: bold;
-}
-
-/* Чтобы кнопка настроек была заметнее при наведении (уже было, но можно оставить) */
-.settings-btn:hover {
-    background: #e0e0e0;
+/* Общая адаптивность для мобильных */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    nav ul {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .popup-content,
+    .warning-content {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
 }
