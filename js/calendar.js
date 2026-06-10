@@ -60,10 +60,7 @@ class TrainingCalendar {
 
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
-        const tomorrowStart = new Date(todayStart);
-        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
 
-        // Сравниваем даты (без времени)
         const trainDateStart = new Date(this.nextTrainingDate);
         trainDateStart.setHours(0, 0, 0, 0);
 
@@ -82,11 +79,37 @@ class TrainingCalendar {
 
     setupClickHandler() {
         const dateDisplay = document.getElementById('nextTrainingDate');
-        if (dateDisplay) {
-            dateDisplay.addEventListener('click', () => {
+        if (!dateDisplay) return;
+
+        dateDisplay.addEventListener('click', () => {
+            if (!this.nextTrainingDate) {
+                // Нет тренировок — всё равно идём в календарь
                 window.location.href = 'calendar.html';
-            });
-        }
+                return;
+            }
+
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const trainDateStart = new Date(this.nextTrainingDate);
+            trainDateStart.setHours(0, 0, 0, 0);
+
+            // Если ближайшая тренировка сегодня — переходим сразу на страницу тренировки
+            if (trainDateStart.getTime() === todayStart.getTime()) {
+                const dateStr = this.formatDate(this.nextTrainingDate);
+                window.location.href = `workout.html?date=${dateStr}`;
+            } else {
+                // Иначе на страницу календаря
+                window.location.href = 'calendar.html';
+            }
+        });
+    }
+
+    // Вспомогательный метод для форматирования даты в YYYY-MM-DD
+    formatDate(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
     }
 
     // Метод для совместимости с PopupManager (возвращает ближайшую дату или null)
