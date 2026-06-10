@@ -4,20 +4,20 @@ class CalendarPage {
         this.currentMonth = this.today.getMonth();
         this.currentYear = this.today.getFullYear();
 
-        this.plannedDates = [];   // массив дат (строк YYYY-MM-DD), на которые есть тренировки
-        this.selectedDate = null; // выбранная дата (строка)
+        this.plannedDates = [];
+        this.selectedDate = null;
         this.selectedElement = null;
 
-        // Кнопки и оверлеи
         this.viewWorkoutBtn = document.getElementById('viewWorkoutBtn');
         this.settingsOverlay = document.getElementById('settingsOverlay');
         this.templateSelectionOverlay = document.getElementById('templateSelectionOverlay');
         this.createTemplateOverlay = document.getElementById('createTemplateOverlay');
         this.templateList = document.getElementById('templateList');
         this.noTemplatesMessage = document.getElementById('noTemplatesMessage');
+        this.exercisesContainer = document.getElementById('exercisesContainer');
 
-        // Шаблоны
         this.templates = [];
+        this.currentExercises = [];   // массив объектов { name, sets, maxReps, bodyweight }
 
         this.init();
     }
@@ -100,15 +100,14 @@ class CalendarPage {
         }
     }
 
-    async createTemplate(name) {
+    async createTemplate(templateData) {
         try {
             const newRef = firebase.database().ref('templates').push();
             await newRef.set({
-                name: name,
+                ...templateData,
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             });
-            // Добавляем локально
-            this.templates.push({ id: newRef.key, name: name });
+            this.templates.push({ id: newRef.key, name: templateData.name });
             return newRef.key;
         } catch (error) {
             console.error('Ошибка создания шаблона:', error);
@@ -229,7 +228,6 @@ class CalendarPage {
     setupTemplateSelection() {
         document.getElementById('backFromTemplatesBtn').addEventListener('click', () => {
             this.closeTemplateSelectionPopup();
-            // Возвращаемся к настройкам дня
             this.settingsOverlay.classList.add('active');
         });
 
@@ -262,7 +260,6 @@ class CalendarPage {
                 const li = document.createElement('li');
                 li.textContent = template.name;
                 li.addEventListener('click', async () => {
-                    // Выбор шаблона
                     if (this.selectedDate) {
                         await this.addWorkoutWithTemplate(this.selectedDate, template.id);
                         this.closeTemplateSelectionPopup();
@@ -274,8 +271,13 @@ class CalendarPage {
         }
     }
 
-    /* ========== Попап создания шаблона ========== */
+    /* ========== Попап создания шаблона с упражнениями ========== */
     setupCreateTemplate() {
+        document.getElementById('cancelCreateTemplateBtn').addEventListener('click', () => {
+            this.closeCreateTemplatePopup();
+            this.openTemplateSelectionPopup();
+        });
+
         document.getElementById('saveTemplateBtn').addEventListener('click', async () => {
             const nameInput = document.getElementById('templateNameInput');
             const name = nameInput.value.trim();
@@ -283,28 +285,103 @@ class CalendarPage {
                 alert('Введите название шаблона');
                 return;
             }
-            const newId = await this.createTemplate(name);
+
+            const exercises = this.collectExercisesData();
+            if (exercises.length === 0) {
+                alert('Добавьте хотя бы одно упражнение');
+                return;
+            }
+
+            const newId = await this.createTemplate({ name, exercises });
             if (newId) {
                 nameInput.value = '';
+                this.currentExercises = [];
                 this.closeCreateTemplatePopup();
-                // Снова открываем выбор шаблона, где уже будет новый
                 this.openTemplateSelectionPopup();
             }
         });
 
-        document.getElementById('cancelCreateTemplateBtn').addEventListener('click', () => {
-            this.closeCreateTemplatePopup();
-            // Возвращаемся к выбору шаблона
-            this.openTemplateSelectionPopup();
+        document.getElementById('addExerciseBtn').addEventListener('click', () => {
+            this.addExerciseRow();
         });
     }
 
     openCreateTemplatePopup() {
+        // Сбрасываем и добавляем одно пустое упражнение
+        this.currentExercises = [{ name: '', sets: 3, maxReps: 10, bodyweight: false }];
+        this.renderExercises();
+        document.getElementById('templateNameInput').value = '';
         this.createTemplateOverlay.classList.add('active');
     }
 
     closeCreateTemplatePopup() {
         this.createTemplateOverlay.classList.remove('active');
+    }
+
+    addExerciseRow() {
+        this.currentExercises.push({ name: '', sets: 3, maxReps: 10, bodyweight: false });
+        this.renderExercises();
+    }
+
+    removeExerciseRow(index) {
+        this.currentExercises.splice(index, 1);
+        this.renderExercises();
+    }
+
+    renderExercises() {
+        if (!this.exercisesContainer) return;
+        this.exercisesContainer.innerHTML = '';
+
+        this.currentExercises.forEach((exercise, index) => {
+            const row = document.createElement('div');
+            row.className = 'exercise-row';
+            row.innerHTML = `
+                <input type="text" class="exercise-name" value="${this.escapeHtml(exercise.name)}" placeholder="Упражнение">
+                <input type="number" class="exercise-sets" value="${exercise.sets}" min="1" max="20" placeholder="Подходы">
+                <input type="number" class="exercise-max-reps" value="${exercise.maxReps}" min="1" max="100" placeholder="Повторы">
+                <label>
+                    <input type="checkbox" class="exercise-bodyweight" ${exercise.bodyweight ? 'checked' : ''}>
+                    Свой вес
+                </label>
+                <button class="remove-exercise" title="Удалить">×</button>
+            `;
+
+            // Обработчики для синхронизации данных
+            const nameInput = row.querySelector('.exercise-name');
+            const setsInput = row.querySelector('.exercise-sets');
+            const maxRepsInput = row.querySelector('.exercise-max-reps');
+            const bodyweightCheck = row.querySelector('.exercise-bodyweight');
+            const removeBtn = row.querySelector('.remove-exercise');
+
+            nameInput.addEventListener('input', (e) => {
+                this.currentExercises[index].name = e.target.value;
+            });
+            setsInput.addEventListener('input', (e) => {
+                this.currentExercises[index].sets = parseInt(e.target.value) || 1;
+            });
+            maxRepsInput.addEventListener('input', (e) => {
+                this.currentExercises[index].maxReps = parseInt(e.target.value) || 1;
+            });
+            bodyweightCheck.addEventListener('change', (e) => {
+                this.currentExercises[index].bodyweight = e.target.checked;
+            });
+            removeBtn.addEventListener('click', () => {
+                this.removeExerciseRow(index);
+            });
+
+            this.exercisesContainer.appendChild(row);
+        });
+    }
+
+    collectExercisesData() {
+        // Данные уже актуальны в this.currentExercises благодаря обработчикам
+        // Фильтруем упражнения с пустым названием (можно пропустить, но лучше не сохранять)
+        return this.currentExercises.filter(ex => ex.name.trim() !== '');
+    }
+
+    escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     /* ========== Обновление данных после изменений ========== */
@@ -325,7 +402,6 @@ class CalendarPage {
         const settingsBtn = document.getElementById('settingsBtn');
 
         document.getElementById('addWorkoutBtn').addEventListener('click', () => {
-            // Вместо немедленного добавления открываем выбор шаблона
             this.openTemplateSelectionPopup();
         });
 
