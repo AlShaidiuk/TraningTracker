@@ -319,6 +319,51 @@ main {
     box-shadow: none;
 }
 
+/* Список шаблонов */
+.template-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.template-list li {
+    padding: 12px 15px;
+    margin: 5px 0;
+    background: #f0f2ff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: left;
+    font-size: 16px;
+}
+
+.template-list li:hover {
+    background: #d0d5ff;
+}
+
+.template-list li.selected-template {
+    background: #667eea;
+    color: white;
+}
+
+/* Поле ввода */
+.input-field {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.input-field:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
