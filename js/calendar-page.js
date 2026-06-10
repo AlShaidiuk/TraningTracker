@@ -4,80 +4,73 @@ class CalendarPage {
         this.currentMonth = this.today.getMonth();
         this.currentYear = this.today.getFullYear();
 
-        // Массив запланированных дат (будет загружен асинхронно)
         this.plannedDates = [];
         this.selectedDate = null;
         this.selectedElement = null;
 
-        // Инициализация после загрузки данных
         this.init();
     }
 
     async init() {
-        // Показываем индикатор загрузки (опционально)
-        await this.loadPlannedDatesFromFirestore();
+        await this.loadPlannedDatesFromDB();
         this.renderCalendar();
         this.setupSettingsButton();
     }
 
-    // Загрузка дат из Firestore
-    async loadPlannedDatesFromFirestore() {
+    // Загрузка дат из Realtime Database
+    async loadPlannedDatesFromDB() {
         try {
-            const snapshot = await db.collection('plannedWorkouts').get();
-            if (snapshot.empty) {
-                // Если коллекция пуста, создаём демо-даты и сохраняем
-                this.plannedDates = this.getMockPlannedDates();
-                await this.savePlannedDatesToFirestore();
+            const snapshot = await firebase.database().ref('plannedWorkouts').once('value');
+            const data = snapshot.val();
+            if (data) {
+                // Ключи объекта – это даты в формате YYYY-MM-DD
+                this.plannedDates = Object.keys(data);
             } else {
-                this.plannedDates = snapshot.docs.map(doc => doc.id);
+                // Если данных нет, создаём демо-тренировки
+                this.plannedDates = this.getMockPlannedDates();
+                await this.saveAllDatesToDB();
             }
         } catch (error) {
-            console.error('Ошибка загрузки дат из Firestore:', error);
-            // Резервный вариант: загружаем демо, но не сохраняем в базу
+            console.error('Ошибка загрузки:', error);
             this.plannedDates = this.getMockPlannedDates();
         }
     }
 
-    // Сохранение ВСЕХ текущих дат в Firestore (используется при первой инициализации)
-    async savePlannedDatesToFirestore() {
+    // Сохранение всех дат разом (первый запуск)
+    async saveAllDatesToDB() {
         try {
-            const batch = db.batch();
-            // Очищаем существующие (удаляем все, потом добавим новые)
-            const snapshot = await db.collection('plannedWorkouts').get();
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            // Добавляем все даты из массива
+            const updates = {};
+            // Удаляем старые (на всякий случай)
+            await firebase.database().ref('plannedWorkouts').remove();
+            // Записываем новые
             this.plannedDates.forEach(date => {
-                const docRef = db.collection('plannedWorkouts').doc(date);
-                batch.set(docRef, { createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                updates[date] = true;
             });
-            await batch.commit();
+            await firebase.database().ref('plannedWorkouts').update(updates);
         } catch (error) {
-            console.error('Ошибка сохранения дат в Firestore:', error);
+            console.error('Ошибка сохранения:', error);
         }
     }
 
-    // Добавить одну дату в Firestore
+    // Добавить одну дату
     async addPlannedDate(dateStr) {
         try {
-            await db.collection('plannedWorkouts').doc(dateStr).set({
-                date: dateStr,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await firebase.database().ref(`plannedWorkouts/${dateStr}`).set(true);
         } catch (error) {
-            console.error('Ошибка добавления даты:', error);
+            console.error('Ошибка добавления:', error);
         }
     }
 
-    // Удалить одну дату из Firestore
+    // Удалить одну дату
     async removePlannedDate(dateStr) {
         try {
-            await db.collection('plannedWorkouts').doc(dateStr).delete();
+            await firebase.database().ref(`plannedWorkouts/${dateStr}`).remove();
         } catch (error) {
-            console.error('Ошибка удаления даты:', error);
+            console.error('Ошибка удаления:', error);
         }
     }
 
-    // Демо-даты (пн, ср, пт текущего месяца)
+    // Демо-даты (пн, ср, пт)
     getMockPlannedDates() {
         const y = this.today.getFullYear();
         const m = this.today.getMonth();
@@ -175,8 +168,7 @@ class CalendarPage {
     }
 
     async refreshDataAndRender() {
-        // Перезагружаем список дат из Firestore, чтобы синхронизировать
-        await this.loadPlannedDatesFromFirestore();
+        await this.loadPlannedDatesFromDB();
         this.renderCalendar();
     }
 
