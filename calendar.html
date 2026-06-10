@@ -67,17 +67,21 @@
         </div>
     </div>
 
-    <!-- Попап создания нового шаблона -->
-    <div id="createTemplateOverlay" class="popup-overlay">
-        <div class="popup-content">
-            <h3>Новый шаблон</h3>
-            <input type="text" id="templateNameInput" class="input-field" placeholder="Название шаблона">
-            <div class="popup-buttons">
-                <button id="saveTemplateBtn" class="btn btn-success">Сохранить</button>
-                <button id="cancelCreateTemplateBtn" class="btn btn-secondary">Назад</button>
-            </div>
+<!-- Попап создания нового шаблона -->
+<div id="createTemplateOverlay" class="popup-overlay">
+    <div class="popup-content wide-popup">
+        <h3>Новый шаблон</h3>
+        <input type="text" id="templateNameInput" class="input-field" placeholder="Название шаблона">
+        <div id="exercisesContainer" class="exercises-container">
+            <!-- Упражнения будут добавляться динамически -->
+        </div>
+        <button id="addExerciseBtn" class="btn btn-secondary btn-add">+ Добавить упражнение</button>
+        <div class="popup-buttons">
+            <button id="saveTemplateBtn" class="btn btn-success">Сохранить</button>
+            <button id="cancelCreateTemplateBtn" class="btn btn-secondary">Назад</button>
         </div>
     </div>
+</div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
