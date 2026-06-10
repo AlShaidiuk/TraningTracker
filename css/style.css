@@ -288,7 +288,7 @@ main {
 }
 
 calendar-grid {
-    display: grid !important;  /* насильно, чтобы никакой медиа-запрос не перебил */
+    display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
     text-align: center;
@@ -357,8 +357,19 @@ calendar-grid {
     }
 }
 
+@media (max-width: 600px) {
+    .calendar-grid {
+        gap: 1px;
+        font-size: 12px;
+    }
+    .calendar-day-header,
+    .calendar-day {
+        padding: 6px 1px;
+    }
+}
+
 /* На десктопах возвращаем комфортные размеры */
-@media (min-width: 768px) {
+@media (min-width: 769px) {
     .calendar-grid {
         gap: 5px;
         font-size: 16px;
