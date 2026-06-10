@@ -346,3 +346,15 @@ main {
         font-size: 14px;
     }
 }
+
+/* Выделенный день в календаре */
+.calendar-day.selected {
+    outline: 3px solid #ff9800;
+    background-color: #fff3e0;
+    font-weight: bold;
+}
+
+/* Чтобы кнопка настроек была заметнее при наведении (уже было, но можно оставить) */
+.settings-btn:hover {
+    background: #e0e0e0;
+}
