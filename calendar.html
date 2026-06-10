@@ -30,9 +30,8 @@
                         </button>
                     </div>
                     <div class="calendar-grid" id="calendarGrid">
-                        <!-- JS -->
+                        <!-- Календарь генерируется JS -->
                     </div>
-                    <!-- Новая кнопка -->
                     <button id="viewWorkoutBtn" class="btn btn-primary" disabled>
                         Смотреть тренировку
                     </button>
@@ -54,10 +53,35 @@
         </div>
     </div>
 
+    <!-- Попап выбора шаблона -->
+    <div id="templateSelectionOverlay" class="popup-overlay">
+        <div class="popup-content">
+            <h3>Выберите шаблон</h3>
+            <ul id="templateList" class="template-list"></ul>
+            <p id="noTemplatesMessage" style="display:none;">Нет сохранённых шаблонов</p>
+            <div class="popup-buttons">
+                <button id="createTemplateBtn" class="btn btn-primary">Создать шаблон</button>
+                <button id="backFromTemplatesBtn" class="btn btn-secondary">Назад</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Попап создания нового шаблона -->
+    <div id="createTemplateOverlay" class="popup-overlay">
+        <div class="popup-content">
+            <h3>Новый шаблон</h3>
+            <input type="text" id="templateNameInput" class="input-field" placeholder="Название шаблона">
+            <div class="popup-buttons">
+                <button id="saveTemplateBtn" class="btn btn-success">Сохранить</button>
+                <button id="cancelCreateTemplateBtn" class="btn btn-secondary">Назад</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-<script src="firebase/config.js"></script>
-<script src="js/calendar-page.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="firebase/config.js"></script>
+    <script src="js/calendar-page.js"></script>
 </body>
 </html>
