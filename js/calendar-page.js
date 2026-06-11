@@ -215,6 +215,14 @@ class CalendarPage {
         this.updateViewWorkoutButton();
     }
 
+        isPastDay(dateStr) {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        return date < todayStart;
+    }
+
     updateViewWorkoutButton() {
         if (!this.viewWorkoutBtn) return;
         if (this.selectedDate && this.plannedDates.includes(this.selectedDate)) {
@@ -399,43 +407,61 @@ class CalendarPage {
 
     /* ========== Настройки дня ========== */
     setupSettingsButton() {
-        const settingsBtn = document.getElementById('settingsBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const addBtn = document.getElementById('addWorkoutBtn');
 
-        document.getElementById('addWorkoutBtn').addEventListener('click', () => {
-            this.openTemplateSelectionPopup();
-        });
+    document.getElementById('addWorkoutBtn').addEventListener('click', () => {
+        // Дополнительная страховка
+        if (this.selectedDate && this.isPastDay(this.selectedDate)) {
+            alert('Нельзя добавлять тренировки в прошлом.');
+            return;
+        }
+        this.openTemplateSelectionPopup();
+    });
 
-        document.getElementById('removeWorkoutBtn').addEventListener('click', async () => {
-            if (this.selectedDate) {
-                await this.removePlannedDate(this.selectedDate);
-                this.closeSettingsPopup();
-                await this.refreshDataAndRender();
-            }
-        });
-
-        document.getElementById('backSettingsBtn').addEventListener('click', () => {
+    document.getElementById('removeWorkoutBtn').addEventListener('click', async () => {
+        if (this.selectedDate) {
+            await this.removePlannedDate(this.selectedDate);
             this.closeSettingsPopup();
-        });
+            await this.refreshDataAndRender();
+        }
+    });
 
-        this.settingsOverlay.addEventListener('click', (e) => {
-            if (e.target === this.settingsOverlay) {
-                this.closeSettingsPopup();
-            }
-        });
+    document.getElementById('backSettingsBtn').addEventListener('click', () => {
+        this.closeSettingsPopup();
+    });
 
-        settingsBtn.addEventListener('click', () => {
-            if (!this.selectedDate) {
-                alert('Сначала выберите день в календаре');
-                return;
+    this.settingsOverlay.addEventListener('click', (e) => {
+        if (e.target === this.settingsOverlay) {
+            this.closeSettingsPopup();
+        }
+    });
+
+    settingsBtn.addEventListener('click', () => {
+        if (!this.selectedDate) {
+            alert('Сначала выберите день в календаре');
+            return;
+        }
+
+        // Блокируем добавление для прошлых дней
+        const past = this.isPastDay(this.selectedDate);
+        if (addBtn) {
+            addBtn.disabled = past;
+            if (past) {
+                addBtn.title = 'Нельзя добавить тренировку на прошедшую дату';
+            } else {
+                addBtn.title = '';
             }
-            const [y, m, d] = this.selectedDate.split('-');
-            const displayDate = new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            });
-            document.getElementById('selectedDateDisplay').textContent = displayDate;
-            this.settingsOverlay.classList.add('active');
+        }
+
+        const [y, m, d] = this.selectedDate.split('-');
+        const displayDate = new Date(y, m - 1, d).toLocaleDateString('ru-RU', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
-    }
+        document.getElementById('selectedDateDisplay').textContent = displayDate;
+        this.settingsOverlay.classList.add('active');
+    });
+}
 
     closeSettingsPopup() {
         this.settingsOverlay.classList.remove('active');
