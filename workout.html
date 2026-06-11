@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренировка</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Workout Tracker</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Дашборд</a></li>
+                    <li><a href="calendar.html">Календарь</a></li>
+                    <li><a href="templates.html">Шаблоны</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div id="workoutHeader"></div>
+            <div id="workoutTableContainer" class="workout-table-container">
+                <!-- Таблица генерируется динамически -->
+            </div>
+            <div id="workoutActions">
+                <button id="finishWorkoutBtn" class="btn btn-primary">Завершить тренировку</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Попап незавершённой тренировки -->
+    <div id="incompleteWorkoutOverlay" class="popup-overlay">
+        <div class="popup-content">
+            <h3>Тренировка не завершена</h3>
+            <p>Не все подходы заполнены. Вы действительно хотите завершить тренировку?</p>
+            <div class="popup-buttons">
+                <button id="forceFinishBtn" class="btn btn-danger">Всё равно завершить</button>
+                <button id="continueWorkoutBtn" class="btn btn-secondary">Продолжить тренировку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="firebase/config.js"></script>
+    <script src="js/workout.js"></script>
+</body>
+</html>
