@@ -25,6 +25,7 @@ class CalendarPage {
     async init() {
         await this.loadPlannedDatesFromDB();
         await this.loadTemplatesFromDB();
+        await this.loadWorkoutStatuses();
         this.renderCalendar();
         this.setupSettingsButton();
         this.setupViewWorkoutButton();
@@ -61,6 +62,20 @@ class CalendarPage {
             console.error('Ошибка сохранения:', error);
         }
     }
+
+        async loadWorkoutStatuses() {
+        try {
+            const snap = await firebase.database().ref('workoutData').once('value');
+            const data = snap.val() || {};
+            this.workoutStatuses = {};
+            Object.keys(data).forEach(date => {
+                this.workoutStatuses[date] = data[date];
+            });
+        } catch (e) {
+            console.error('Ошибка загрузки статусов тренировок:', e);
+            this.workoutStatuses = {};
+        }
+}
 
     async addWorkoutWithTemplate(dateStr, templateId) {
         try {
@@ -123,6 +138,29 @@ class CalendarPage {
         const daysInMonth = new Date(y, m + 1, 0).getDate();
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(y, m, day);
+            const dateStr = this.formatDate(date);
+if (this.isPlanned(date)) {
+    dayCell.classList.add('planned-workout');
+
+    // проверяем статус для прошедших дней
+    const todayStart = new Date();
+    todayStart.setHours(0,0,0,0);
+    if (date < todayStart) {
+        const statusData = this.workoutStatuses[dateStr];
+        if (statusData) {
+            if (statusData.fullyCompleted === true) {
+                dayCell.classList.add('status-completed');
+                dayCell.innerHTML = '⭐'; // вместо числа
+            } else {
+                dayCell.classList.add('status-partial');
+                // число остаётся
+            }
+        } else {
+            dayCell.classList.add('status-missed');
+            dayCell.innerHTML = '😞';
+        }
+    }
+}
             const dayOfWeek = date.getDay();
             if (dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5) {
                 dates.push(this.formatDate(date));
@@ -394,6 +432,7 @@ class CalendarPage {
 
     /* ========== Обновление данных после изменений ========== */
     async refreshDataAndRender() {
+        await this.loadWorkoutStatuses();
         await this.loadPlannedDatesFromDB();
         if (this.selectedDate && !this.plannedDates.includes(this.selectedDate)) {
             if (this.selectedElement) {
