@@ -563,6 +563,31 @@ main {
     margin: 5px 0 0;
 }
 
+/* Статусы тренировок в календаре */
+.calendar-day.status-missed {
+    background: #f8d7da; /* бледно-красный */
+    color: #721c24;
+    font-weight: bold;
+}
+
+.calendar-day.status-partial {
+    background: #fff3cd; /* желтый */
+    color: #856404;
+}
+
+.calendar-day.status-completed {
+    background: #d4edda; /* светло-зеленый */
+    color: #155724;
+    font-size: 18px; /* чтобы смайлик был заметнее */
+}
+
+/* Убираем подсветку planned-workout для прошедших, если есть статус */
+.calendar-day.planned-workout.status-missed,
+.calendar-day.planned-workout.status-partial,
+.calendar-day.planned-workout.status-completed {
+    /* Можно оставить базовые цвета статусов */
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
