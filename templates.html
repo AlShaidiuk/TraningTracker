@@ -23,18 +23,22 @@
             <section class="templates-section">
                 <h2>Мои шаблоны</h2>
                 <div id="templatesList" class="templates-manager">
-                    <!-- Загружается через JS -->
+                    <!-- JS -->
                 </div>
                 <p id="noTemplatesMessage" style="display:none;">У вас пока нет шаблонов.</p>
             </section>
         </main>
     </div>
 
-    <!-- Модальное окно для редактирования названия -->
+    <!-- Попап редактирования шаблона (полноценный конструктор) -->
     <div id="editTemplateOverlay" class="popup-overlay">
-        <div class="popup-content">
+        <div class="popup-content wide-popup">
             <h3>Редактировать шаблон</h3>
-            <input type="text" id="editTemplateNameInput" class="input-field" placeholder="Новое название">
+            <input type="text" id="editTemplateNameInput" class="input-field" placeholder="Название шаблона">
+            <div id="editExercisesContainer" class="exercises-container">
+                <!-- Динамические упражнения -->
+            </div>
+            <button id="addExerciseInEditBtn" class="btn btn-secondary btn-add">+ Добавить упражнение</button>
             <div class="popup-buttons">
                 <button id="saveEditTemplateBtn" class="btn btn-success">Сохранить</button>
                 <button id="cancelEditTemplateBtn" class="btn btn-secondary">Отмена</button>
