@@ -1,11 +1,10 @@
 class WorkoutPage {
     constructor() {
         this.dateStr = this.getDateFromUrl();
-        this.workoutData = null;   // данные из plannedWorkouts/{date}
-        this.template = null;      // объект шаблона (name, exercises[])
-        this.savedSets = {};       // ключ: exerciseIndex_setIndex, значение: { reps, weight }
-        this.completedSets = {};   // ключ: exerciseIndex, значение: number (сколько подходов завершено)
-
+        this.workoutData = null;
+        this.template = null;
+        this.savedSets = {};
+        this.completedSets = {};
         this.init();
     }
 
@@ -19,13 +18,11 @@ class WorkoutPage {
             document.getElementById('workoutHeader').innerHTML = '<h2>Дата не указана</h2>';
             return;
         }
-
         await this.loadWorkoutData();
         if (!this.workoutData || !this.workoutData.templateId) {
             document.getElementById('workoutHeader').innerHTML = '<h2>Тренировка не найдена</h2>';
             return;
         }
-
         await this.loadTemplate();
         await this.loadSavedProgress();
         this.render();
@@ -52,11 +49,9 @@ class WorkoutPage {
             this.template = snap.val() || { name: 'Шаблон удалён', exercises: [] };
         } catch (e) {
             console.error(e);
-            this.template = { name: 'Ошибка загрузки', exercises: [] };
         }
     }
 
-    // Загружаем сохранённые данные по подходам
     async loadSavedProgress() {
         try {
             const snap = await firebase.database().ref(`workoutData/${this.dateStr}`).once('value');
@@ -70,7 +65,17 @@ class WorkoutPage {
         }
     }
 
-    // Сохранение завершённого подхода в облако
+    // Проверка, все ли подходы всех упражнений завершены
+    checkAllSetsCompleted() {
+        if (!this.template.exercises) return true;
+        for (let i = 0; i < this.template.exercises.length; i++) {
+            const maxSets = this.template.exercises[i].sets || 1;
+            const completed = this.completedSets[i] || 0;
+            if (completed < maxSets) return false;
+        }
+        return true;
+    }
+
     async saveSetProgress(exerciseIndex, setIndex, reps, weight) {
         const key = `${exerciseIndex}_${setIndex}`;
         this.savedSets[key] = { reps, weight };
@@ -78,16 +83,17 @@ class WorkoutPage {
         if (!this.completedSets[exerciseIndex]) {
             this.completedSets[exerciseIndex] = 0;
         }
-        // Увеличиваем счётчик завершённых подходов, если этот подход ещё не был учтён
-        const alreadyCompleted = this.completedSets[exerciseIndex] > setIndex;
-        if (!alreadyCompleted) {
+        if (this.completedSets[exerciseIndex] <= setIndex) {
             this.completedSets[exerciseIndex] = setIndex + 1;
         }
+
+        const allCompleted = this.checkAllSetsCompleted();
 
         try {
             await firebase.database().ref(`workoutData/${this.dateStr}`).set({
                 savedSets: this.savedSets,
-                completedSets: this.completedSets
+                completedSets: this.completedSets,
+                fullyCompleted: allCompleted
             });
         } catch (e) {
             console.error('Ошибка сохранения:', e);
@@ -108,12 +114,9 @@ class WorkoutPage {
             return;
         }
 
-        // Строим таблицу
-        let html = '<table class="workout-table"><thead><tr><th>Упражнение</th>';
-
-        // Определяем максимальное число подходов среди всех упражнений (для колонок)
         const maxSets = Math.max(...this.template.exercises.map(ex => ex.sets || 1));
 
+        let html = '<table class="workout-table"><thead><tr><th>Упражнение</th>';
         for (let s = 1; s <= maxSets; s++) {
             html += `<th class="set-col" colspan="2">Подход ${s}</th>`;
         }
@@ -132,43 +135,24 @@ class WorkoutPage {
                 const repsValue = saved ? saved.reps : '';
                 const weightValue = saved ? saved.weight : '';
 
-                // Повторы
-                html += `<td><input type="number" 
-                    class="reps-input" 
-                    data-exercise="${exerciseIndex}" 
-                    data-set="${setIndex}" 
-                    data-max-reps="${maxReps}"
-                    placeholder="${maxReps}" 
-                    value="${repsValue}" 
-                    min="0"></td>`;
+                html += `<td><input type="number" class="reps-input" data-exercise="${exerciseIndex}" data-set="${setIndex}" data-max-reps="${maxReps}" placeholder="${maxReps}" value="${repsValue}" min="0"></td>`;
 
-                // Вес (только если не собственный вес)
                 if (!bodyweight) {
-                    html += `<td><input type="number" 
-                        class="weight-input" 
-                        data-exercise="${exerciseIndex}" 
-                        data-set="${setIndex}" 
-                        placeholder="Вес" 
-                        value="${weightValue}" 
-                        min="0" step="0.5"></td>`;
+                    html += `<td><input type="number" class="weight-input" data-exercise="${exerciseIndex}" data-set="${setIndex}" placeholder="Вес" value="${weightValue}" min="0" step="0.5"></td>`;
                 } else {
-                    html += '<td></td>'; // пустая ячейка
+                    html += '<td></td>';
                 }
             }
 
-            // Кнопка "Завершить подход"
             const completed = this.completedSets[exerciseIndex] || 0;
             const disabled = completed >= maxSets ? 'disabled' : '';
-            html += `<td class="finish-set-cell"><button class="btn btn-primary btn-finish-set" 
-                data-exercise="${exerciseIndex}" ${disabled}>Завершить подход</button></td>`;
-
+            html += `<td class="finish-set-cell"><button class="btn btn-primary btn-finish-set" data-exercise="${exerciseIndex}" ${disabled}>Завершить подход</button></td>`;
             html += '</tr>';
         });
 
         html += '</tbody></table>';
         container.innerHTML = html;
 
-        // Навешиваем обработчики
         this.setupInputListeners();
         this.setupFinishSetButtons();
     }
@@ -179,7 +163,6 @@ class WorkoutPage {
     }
 
     setupInputListeners() {
-        // Подсветка повторов при вводе
         document.querySelectorAll('.reps-input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const maxReps = parseInt(e.target.dataset.maxReps) || 0;
@@ -208,7 +191,6 @@ class WorkoutPage {
                 const completed = this.completedSets[exerciseIndex] || 0;
                 if (completed >= maxSets) return;
 
-                // Ищем данные текущего незавершённого подхода (setIndex = completed)
                 const setIndex = completed;
                 const exercise = this.template.exercises[exerciseIndex];
                 const bodyweight = exercise.bodyweight || false;
@@ -228,20 +210,16 @@ class WorkoutPage {
                     return;
                 }
 
-                // Сохраняем подход
                 await this.saveSetProgress(exerciseIndex, setIndex, reps, weight || 0);
 
-                // Блокируем кнопку, если все подходы завершены
                 if (this.completedSets[exerciseIndex] >= maxSets) {
                     e.target.disabled = true;
                 }
-                // Обновляем состояние кнопки для этого упражнения (вдруг стали активны следующие)
                 this.updateFinishButtonState(exerciseIndex);
             });
         });
     }
 
-    // Проверяет, можно ли активировать кнопку "Завершить подход" для упражнения
     updateFinishButtonState(exerciseIndex) {
         const button = document.querySelector(`.btn-finish-set[data-exercise="${exerciseIndex}"]`);
         if (!button) return;
@@ -256,7 +234,7 @@ class WorkoutPage {
             return;
         }
 
-        const setIndex = completed; // текущий незавершённый подход
+        const setIndex = completed;
         const repsInput = document.querySelector(`.reps-input[data-exercise="${exerciseIndex}"][data-set="${setIndex}"]`);
         const weightInput = exercise.bodyweight ? null : document.querySelector(`.weight-input[data-exercise="${exerciseIndex}"][data-set="${setIndex}"]`);
 
@@ -271,10 +249,9 @@ class WorkoutPage {
         const overlay = document.getElementById('incompleteWorkoutOverlay');
 
         finishBtn.addEventListener('click', () => {
-            // Проверяем, все ли подходы завершены
             const allCompleted = this.checkAllSetsCompleted();
             if (allCompleted) {
-                this.finishWorkout();
+                this.finishWorkout(true);
             } else {
                 overlay.classList.add('active');
             }
@@ -282,7 +259,7 @@ class WorkoutPage {
 
         document.getElementById('forceFinishBtn').addEventListener('click', () => {
             overlay.classList.remove('active');
-            this.finishWorkout();
+            this.finishWorkout(false);
         });
 
         document.getElementById('continueWorkoutBtn').addEventListener('click', () => {
@@ -294,18 +271,9 @@ class WorkoutPage {
         });
     }
 
-    checkAllSetsCompleted() {
-        if (!this.template.exercises) return true;
-        for (let i = 0; i < this.template.exercises.length; i++) {
-            const maxSets = this.template.exercises[i].sets || 1;
-            const completed = this.completedSets[i] || 0;
-            if (completed < maxSets) return false;
-        }
-        return true;
-    }
-
-    async finishWorkout() {
+    async finishWorkout(fullyCompleted) {
         try {
+            await firebase.database().ref(`workoutData/${this.dateStr}/fullyCompleted`).set(fullyCompleted);
             await firebase.database().ref(`plannedWorkouts/${this.dateStr}/completed`).set(true);
             alert('Тренировка завершена!');
             window.location.href = 'index.html';
