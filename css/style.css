@@ -478,6 +478,91 @@ main {
     margin-left: 8px;
 }
 
+/* Страница тренировки */
+.workout-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.workout-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.workout-table th,
+.workout-table td {
+    border: 1px solid #ddd;
+    padding: 10px 6px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.workout-table th {
+    background: #667eea;
+    color: white;
+    font-weight: 500;
+}
+
+.workout-table .exercise-name {
+    text-align: left;
+    font-weight: 600;
+    background: #f8f9fa;
+    min-width: 140px;
+}
+
+.workout-table .set-col {
+    min-width: 80px;
+}
+
+.workout-table input[type="number"] {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.workout-table input.red-warning {
+    background-color: #ffe6e6;
+    border-color: #ff4d4d;
+}
+
+.workout-table .finish-set-cell {
+    min-width: 130px;
+}
+
+.workout-table .btn-finish-set {
+    padding: 6px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-finish-set:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.workout-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#workoutHeader {
+    margin-bottom: 10px;
+}
+
+#workoutHeader h2 {
+    margin: 0;
+    color: #333;
+}
+
+#workoutHeader p {
+    color: #666;
+    margin: 5px 0 0;
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
