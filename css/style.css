@@ -472,6 +472,12 @@ main {
     margin-bottom: 15px;
 }
 
+.template-exercise-count {
+    color: #666;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
 /* Адаптивность без изменения display */
 @media (max-width: 600px) {
     .calendar-grid {
